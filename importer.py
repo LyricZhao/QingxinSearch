@@ -2,7 +2,7 @@
 
 import chardet
 import logging, os, re
-import jieba
+import jieba, jieba.analyse
 
 from sqldb import SQLDB
 
@@ -12,9 +12,11 @@ class Importer:
         self.logger = logging.getLogger('Import')
         jieba.initialize()
 
+    def filename(self, path):
+        return os.path.basename(path).split('.')[0]
+
     def to_utf8(self, string):
-        encoding = chardet.detect(string)['encoding']
-        return string.decode(encoding).encoding('utf-8')
+        return string.encode('utf8').decode('utf8')
 
     def word_filter(self, words):
         wset = set()
@@ -23,7 +25,7 @@ class Importer:
                 wset.add(word)
         words = []
         for word in wset:
-            filtered = re.sub("[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+".decode("utf8"), "".decode("utf8"), word)
+            filtered = re.sub('[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+', '', word)
             if len(filtered):
                 words.append(filtered)
         return words
@@ -39,10 +41,9 @@ class Importer:
         self.db.save(journal, title, content, words, keys, commit)
 
     def from_file(self, journal, path):
-        with open(path, 'r') as f:
-            title = f.readline()
+        title = self.filename(path)
+        with open(path, 'r', encoding='gb18030') as f:
             content = f.read()
-        title = self.to_utf8(title)
         content = self.to_utf8(content)
         self.from_raw(journal, title, content, False)
 
@@ -52,11 +53,15 @@ class Importer:
     def from_dir(self, path, multi):
         if multi:
             for journal in os.listdir(path):
-                self.from_dir(os.path.join(path, journal), False)
+                jpath = os.path.join(path, journal)
+                if os.path.isdir(jpath):
+                    self.from_dir(jpath, False)
         else:
             journal = os.path.basename(path)
             for file in os.listdir(path):
-                self.from_file(journal, os.path.join(path, file))
+                fpath = os.path.join(path, file)
+                if os.path.isfile(fpath) and fpath.endswith('.txt'):
+                    self.from_file(journal, fpath)
 
 
 

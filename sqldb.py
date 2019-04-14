@@ -3,6 +3,8 @@
 import logging, os, re, sqlite3
 import jieba
 
+from pagerank import PageRank
+
 class SQLDB:
     def __init__(self, path, clean, commit_rate=50):
         self.db = None
@@ -11,7 +13,7 @@ class SQLDB:
             if os.path.exists(path):
                 os.remove(path)
                 self.logger.info('Previous database has been deleted.')
-            rebuild = os.path.exists(path)
+        rebuild = not os.path.exists(path)
         try:
             self.db = sqlite3.connect(path)
         except:
@@ -19,10 +21,11 @@ class SQLDB:
             exit(1)
         else:
             self.logger.info('Database opened successfully.')
+        
+        cursor = self.db.cursor()
         if rebuild:
-            cursor = self.db.cursor()
             cursor.execute('CREATE TABLE pages (id int primary key, journal text, title text, content text, keys text)')
-            cursor.execute('CREATE TABLE dicts (word text, id int')
+            cursor.execute('CREATE TABLE dicts (word text, id int)')
             self.index = 0
         else:
             self.index = cursor.execute('SELECT max(id) from pages').fetchone()[0]
@@ -33,6 +36,7 @@ class SQLDB:
 
     def search_init(self):
         jieba.initialize()
+        self.pagerank = PageRank()
 
     def commit(self, show=True):
         self.db.commit()
@@ -46,7 +50,7 @@ class SQLDB:
 
     def save(self, journal, title, content, words, keys, commit=False):
         self.index += 1
-        cursor = self.db.cursor
+        cursor = self.db.cursor()
         cursor.execute("INSERT INTO pages VALUES (?, ?, ?, ?, ?)", [self.index, journal, title, content, "+".join(keys)])
         for word in words:
             cursor.execute("INSERT INTO dicts VALUES (?, ?)", [word, self.index])
@@ -56,13 +60,26 @@ class SQLDB:
         if commit or self.commit_count % self.commit_rate == 0:
             self.commit()
 
-    def search(self, keyword):
-        keys = re.sub("[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+".decode('utf8'), "".decode('utf8'), keyword)
+    def search(self, keyword, sort=True):
+        # search
+        keys = re.sub('[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+', '', keyword)
         self.logger.info('Get request for {}.'.format(keys))
-        keys = list(jieba.cut_for_search())
+        keys = list(jieba.cut_for_search(keys))
         cursor = self.db.cursor()
-        cursor.execute('SELECT * from dicts WHERE word=?', keys)
-        arts_index = [art[1] for art in cursor.fetchall()]
-        cursor.execute('SELECT * from pages WHERE id=?', arts_index)
+        cursor.execute('SELECT * from dicts WHERE word in ({})'.format(', '.join('?' for _ in keys)), keys)
+        arts = set()
+        for art in cursor.fetchall():
+            arts.add(art[1])
+        arts = list(arts)
+        cursor.execute('SELECT * from pages WHERE id in ({})'.format(', '.join('?' for _ in arts)), arts)
         arts = cursor.fetchall()
-        print(arts)
+
+        results = self.pagerank.sort(keys, arts)
+        for art in results:
+            print('Title: {}'.format(art[2]))
+        return
+        # pagerank
+        if sort:
+            return self.pagerank.sort(keys, arts)
+        return arts
+
