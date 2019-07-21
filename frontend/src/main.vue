@@ -1,13 +1,19 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <router-view/>
+    <ui ref="ui"> </ui>
   </div>
 </template>
 
 <script>
+import ui from '@/components/ui.vue'
 export default {
-  name: 'App'
+  name: 'app',
+  components: {
+    ui: ui
+  },
+  data() {
+    return {}
+  }
 }
 </script>
 
@@ -18,6 +24,5 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
