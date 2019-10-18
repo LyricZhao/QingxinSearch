@@ -51,7 +51,6 @@ export default {
     },
     methods: {
         show() {
-            console.log('?')
             this.visible = true
         },
         help() {
