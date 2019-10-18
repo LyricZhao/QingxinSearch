@@ -68,7 +68,6 @@ export default {
                 searchText: searchText,
                 searchOption: searchOption
             }
-            console.log(data)
             this.$http.post(address.search, data).then((res) => {
                 console.log(res)
             })

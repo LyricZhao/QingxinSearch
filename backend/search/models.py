@@ -11,3 +11,7 @@ class Article(models.Model):
     title = models.TextField()
     content = models.TextField()
     keys = models.TextField()
+
+class Passwd(models.Model):
+    id = models.TextField(primary_key=True)
+    passwd = models.TextField()
