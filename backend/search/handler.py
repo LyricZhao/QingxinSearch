@@ -1,9 +1,12 @@
 from django.http import HttpResponse
 from django.db.models import Q
+from django.http import JsonResponse
+from django.forms.models import model_to_dict
 
 import json
 import re
 import jieba
+import jieba.analyse
 
 from .models import Passwd, Article, DictItem
 from .rank import PageRank
@@ -11,8 +14,11 @@ from .rank import PageRank
 filter_fulltext_score = 0.2
 filter_keyword_score = 0.55
 
+def mlist_convert(mlist):
+    return [model_to_dict(x) for x in mlist]
+
 def search_journal(journal):
-    return Article.objects.filter(Q(journal__contains=journal))
+    return mlist_convert(Article.objects.filter(journal=journal))
 
 def search_in_db(text, limit):
     keys = re.sub('[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+', '', text)
@@ -42,7 +48,7 @@ def add_article(journal, title, content):
     content_words = jieba.cut(content)
     words = word_filter(list(title_words) + list(content_words))
     keys = jieba.analyse.extract_tags(content, topK=10)
-    article = Article(id=id, journal=journal, title=title, content=content)
+    article = Article(id=id, journal=journal, title=title, content=content, keys='+'.join(keys))
     article.save()
     for word in words:
         try:
@@ -51,6 +57,14 @@ def add_article(journal, title, content):
             item = DictItem(word=word)
             item.save()
         item.ids.add(article)
+
+def upload_article(request):
+    requestJson = json.loads(request.body)
+    # try:
+    add_article(requestJson['journal'], requestJson['title'], requestJson['content'])
+    # except:
+        # return HttpResponse(json.dumps({'result': False}))
+    return HttpResponse(json.dumps({'result': True}))
 
 def search(request):
     requestJson = json.loads(request.body)

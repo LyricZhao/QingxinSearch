@@ -71,7 +71,8 @@ export default {
                 searchOption: searchOption
             }
             this.$http.post(address.search, data).then((res) => {
-                tableData = res.body.result
+                console.log(res.body.result)
+                this.tableData = res.body.result
                 if (!tableData.length()) {
                     this.$notify({title: '没有找到搜索结果'})
                 }

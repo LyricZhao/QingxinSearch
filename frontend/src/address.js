@@ -1,11 +1,15 @@
 const basic = {
     backend: 'http://localhost:8000',
     search: '/api/search',
-    changePasswd: '/api/changePasswd'
+    changePasswd: '/api/changePasswd',
+    uploadArticle: '/api/uploadArticle',
+    uploadJournal: '/api/uploadJournal'
 }
 
 export default {
     backend: basic.backend,
     search: basic.backend + basic.search,
-    changePasswd: basic.backend + basic.changePasswd
+    changePasswd: basic.backend + basic.changePasswd,
+    uploadArticle: basic.backend + basic.uploadArticle,
+    uploadJournal: basic.backend + basic.uploadJournal
 }
