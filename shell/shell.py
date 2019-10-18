@@ -4,7 +4,7 @@ from sqldb import SQLDB
 from importer import Importer
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s: [%(levelname)s] %(message)s')
-db = SQLDB('./qingxin.db', False)
+db = SQLDB('./qingxin.db', True)
 importer = Importer(db)
 importer.from_dir('collection', True)
 db.search_init()

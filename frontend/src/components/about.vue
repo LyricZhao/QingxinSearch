@@ -46,11 +46,12 @@ export default {
     name: 'about',
     data() {
         return {
-            visible: true
+            visible: false
         }
     },
     methods: {
         show() {
+            console.log('?')
             this.visible = true
         },
         help() {
