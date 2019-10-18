@@ -5,7 +5,7 @@
             <el-submenu index="submenu">
                 <template slot="title"> 管理 </template>
                 <el-menu-item index="change"> 更改管理密码 </el-menu-item>
-                <el-menu-item index="manage"> 数据词条管理 </el-menu-item>
+                <el-menu-item index="addNew"> 添加数据词条 </el-menu-item>
             </el-submenu>
             <el-menu-item index="about"> 关于 </el-menu-item>
         </el-menu>
@@ -13,7 +13,7 @@
         <div>
             <about ref="about"/>
             <changePasswd ref="changePasswd"/>
-            <manage ref="manage"/>
+            <addNew ref="addNew"/>
         </div>
     </div>
 </template>
@@ -22,14 +22,14 @@
 
 import about from '@/components/about.vue'
 import changePasswd from '@/components/changePasswd.vue'
-import manage from '@/components/manage.vue'
+import addNew from '@/components/addNew.vue'
 
 export default {
     name: 'topbar',
     components: {
         about: about,
         changePasswd: changePasswd,
-        manage: manage
+        addNew: addNew
     },
     data() {
         return {

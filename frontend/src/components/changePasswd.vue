@@ -26,7 +26,7 @@ export default {
     name: 'changePasswd',
     data() {
         return {
-            visible: true,
+            visible: false,
             adminPass: '',
             newPass: '',
             newPassAgain: ''

@@ -2,10 +2,10 @@
     <div class="main">
         <div style="margin-top: 15px;">
             <el-input placeholder="搜索内容" v-model="searchText" class="input-with-select" style="width: 95%; margin: 0px auto;">
-                <el-select v-model="searchOption" slot="prepend" placeholder="搜索强度">
-                    <el-option label="强" value="3" />
-                    <el-option label="中" value="2" />
-                    <el-option label="弱" value="1" />
+                <el-select v-model="searchOption" slot="prepend" placeholder="搜索选项">
+                    <el-option label="关键词" value="keyword" />
+                    <el-option label="全文" value="fulltext" />
+                    <el-option label="期刊" value="journal" />
                 </el-select>
                 <el-button @click="searchSubmit" slot="append" icon="el-icon-search" />
             </el-input>
@@ -19,7 +19,8 @@
                     <el-table-column prop="content" label="内容"/>
                     <el-table-column label="操作">
                         <template slot-scope="scope">
-                            <el-button @click="handleItemClick(scope.row)" type="text" size="small"> 查看 </el-button>
+                            <el-button @click="modifyItem(scope.row)" type="text" size="small"> 查看和修改 </el-button>
+                            <el-button @click="deleteItem(scope.row)" type="text" size="small"> 删除 </el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -57,19 +58,23 @@ export default {
         }
     },
     methods: {
-        handleItemClick(index) {
-
+        modifyItem(index) {
+        },
+        deleteItem(index) {
         },
         searchSubmit() {
             if (this.searchText === '') return
             let searchText = this.searchText
-            let searchOption = this.searchOption === '' ? '2' : this.searchOption;
+            let searchOption = this.searchOption === '' ? 'keyword' : this.searchOption;
             let data = {
                 searchText: searchText,
                 searchOption: searchOption
             }
             this.$http.post(address.search, data).then((res) => {
-                console.log(res)
+                tableData = res.body.result
+                if (!tableData.length()) {
+                    this.$notify({title: '没有找到搜索结果'})
+                }
             })
         }
     }

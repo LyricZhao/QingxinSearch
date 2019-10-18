@@ -1,15 +1,30 @@
 from django.http import HttpResponse
+from django.db.models import Q
 
 import json
 
 from .models import Passwd, Article, DictItem
 
+def search_journal(journal):
+    return Article.objects.filter(Q(journal__contains=journal))
+
+def search_fulltext():
+    pass
+
+def search_keyword():
+    pass
+
 def search(request):
     requestJson = json.loads(request.body)
     text = requestJson['searchText']
-    option = int(requestJson['searchOption'])
-    result = requestJson
-    return HttpResponse(json.dumps(result), content_type='application/json')
+    option = requestJson['searchOption']
+    if option == 'journal':
+        result = search_journal(text)
+    elif option == 'fulltext':
+        result = search_fulltext(text)
+    else:
+        result = search_keyword(text)
+    return HttpResponse(json.dumps({'result': result}), content_type='application/json')
 
 def change_passwd(request):
     requestJson = json.loads(request.body)
