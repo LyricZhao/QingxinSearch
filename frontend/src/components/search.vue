@@ -16,7 +16,7 @@
                 <el-table :data="tableData" border style="width: 95%; margin: 0px auto;">
                     <el-table-column prop="journal" label="期刊"/>
                     <el-table-column prop="title" label="标题"/>
-                    <el-table-column prop="context" label="内容"/>
+                    <el-table-column prop="content" label="内容"/>
                     <el-table-column label="操作">
                         <template slot-scope="scope">
                             <el-button @click="handleItemClick(scope.row)" type="text" size="small"> 查看 </el-button>
@@ -68,6 +68,7 @@ export default {
                 searchText: searchText,
                 searchOption: searchOption
             }
+            console.log(data)
             this.$http.post(address.search, data).then((res) => {
                 console.log(res)
             })

@@ -18,5 +18,5 @@ from django.conf.urls import url
 from . import handler
 
 urlpatterns = [
-    url('admin', handler.hello),
+    url('search', handler.search),
 ]
