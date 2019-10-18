@@ -2,17 +2,55 @@ from django.http import HttpResponse
 from django.db.models import Q
 
 import json
+import re
+import jieba
 
 from .models import Passwd, Article, DictItem
+from .rank import PageRank
+
+filter_fulltext_score = 0.2
+filter_keyword_score = 0.55
 
 def search_journal(journal):
     return Article.objects.filter(Q(journal__contains=journal))
 
-def search_fulltext():
-    pass
+def search_in_db(text, limit):
+    keys = re.sub('[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+', '', text)
+    keys = list(jieba.cut_for_search(keys))
+    index_arr, results = [], []
+    for key in keys:
+        index_arr += DictItem.object.get(word=key)
+    for index in index_arr:
+        results.append(DictItem.object.get(id=index))
+    return PageRank().filter(keys, results, limit)
 
-def search_keyword():
-    pass
+def word_filter(words):
+    wset = set()
+    for word in words:
+        if not word.isspace():
+            wset.add(word)
+    words = []
+    for word in wset:
+        filtered = re.sub('[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+', '', word)
+        if len(filtered):
+            words.append(filtered)
+    return words
+
+def add_article(journal, title, content):
+    id = Article.objects.count()
+    title_words = jieba.cut_for_search(title)
+    content_words = jieba.cut(content)
+    words = word_filter(list(title_words) + list(content_words))
+    keys = jieba.analyse.extract_tags(content, topK=10)
+    article = Article(id=id, journal=journal, title=title, content=content)
+    article.save()
+    for word in words:
+        try:
+            item = DictItem.objects.get(word=word)
+        except:
+            item = DictItem(word=word)
+            item.save()
+        item.ids.add(article)
 
 def search(request):
     requestJson = json.loads(request.body)
@@ -21,9 +59,9 @@ def search(request):
     if option == 'journal':
         result = search_journal(text)
     elif option == 'fulltext':
-        result = search_fulltext(text)
+        result = search_in_db(text, filter_fulltext_score)
     else:
-        result = search_keyword(text)
+        result = search_in_db(text, filter_keyword_score)
     return HttpResponse(json.dumps({'result': result}), content_type='application/json')
 
 def change_passwd(request):
