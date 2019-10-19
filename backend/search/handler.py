@@ -7,6 +7,8 @@ import json
 import re
 import jieba
 import jieba.analyse
+import zipfile
+import chardet
 
 from .models import Passwd, Article, DictItem
 from .rank import PageRank
@@ -91,26 +93,53 @@ def modify_article_db(id, journal, title, content):
 
 def modify_article(request):
     requestJson = json.loads(request.body)
-    # try:
-    modify_article_db(requestJson['id'], requestJson['journal'], requestJson['title'], requestJson['content'])
-    # except:
-    # return HttpResponse(json.dumps({'result': False}))
+    try:
+        modify_article_db(requestJson['id'], requestJson['journal'], requestJson['title'], requestJson['content'])
+    except:
+        return HttpResponse(json.dumps({'result': False}))
     return HttpResponse(json.dumps({'result': True}))
 
 def delete_article(request):
     requestJson = json.loads(request.body)
-    # try:
-    delete_article_db(requestJson['id'])
-    # except:
-    # return HttpResponse(json.dumps({'result': False}))
+    try:
+        delete_article_db(requestJson['id'])
+    except:
+        return HttpResponse(json.dumps({'result': False}))
     return HttpResponse(json.dumps({'result': True}))
 
 def upload_article(request):
     requestJson = json.loads(request.body)
-    # try:
-    add_article_db(requestJson['journal'], requestJson['title'], requestJson['content'])
-    # except:
-        # return HttpResponse(json.dumps({'result': False}))
+    try:
+        add_article_db(requestJson['journal'], requestJson['title'], requestJson['content'])
+    except:
+        return HttpResponse(json.dumps({'result': False}))
+    return HttpResponse(json.dumps({'result': True}))
+
+def upload_journal(request):
+    try:
+        with zipfile.ZipFile(request.FILES['file'], 'r') as zip:
+            for filename in zip.namelist():
+                original_filename = filename
+                filename = filename.encode('cp437').decode('utf-8')
+                if filename.startswith('_') or filename.startswith('.'):
+                    continue
+                info = filename.split('/')
+                if len(info) != 2:
+                    continue
+                journal, title = info[0], info[1]
+                if len(title) == 0:
+                    continue
+                title = '.'.join(title.split('.')[0:-1])
+                with zip.open(original_filename) as content:
+                    bytes_stream = content.read()
+                    if chardet.detect(bytes_stream)['encoding'] == 'utf-8':
+                        content = bytes_stream.decode('utf-8')
+                    else:
+                        content = bytes_stream.decode('gbk')
+                    add_article_db(journal, title, content)
+                    print(title)
+    except:
+        return HttpResponse(json.dumps({'result': False}))
     return HttpResponse(json.dumps({'result': True}))
 
 def search(request):
@@ -148,4 +177,9 @@ def set_passwd(request):
         passwd_obj.save()
     except:
         Passwd.objects.create(id=field, passwd=passwd)
+    return HttpResponse('success')
+
+def delete_all(request):
+    Article.objects.all().delete()
+    DictItem.objects.all().delete()
     return HttpResponse('success')

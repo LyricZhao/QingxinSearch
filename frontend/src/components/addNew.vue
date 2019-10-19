@@ -12,9 +12,11 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="添加期刊">
-                            <h3 style="font-size: 2vh"> 请上传zip压缩文件（可上传多个期刊） </h3>
-                            <h3 style="font-size: 2vh"> 文件解压后目录格式为: 期刊号/文章.txt </h3>
-                            <el-button @click="uploadJournal" type="primary">上传</el-button>
+                            <el-upload drag :action="uploadJournalAddress" :show-file-list="false">
+                                <i class="el-icon-upload"></i>
+                                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                                <div class="el-upload__tip" slot="tip">请上传zip压缩文件（可上传多个期刊，文件解压后目录格式为: 期刊号/文章.txt）</div>
+                            </el-upload>
                         </el-tab-pane>
                     </el-tabs>
             </div>
@@ -30,10 +32,11 @@ export default {
     name: 'manage',
     data() {
         return {
-            visible: false,
+            visible: true,
             journal: '',
             content: '',
-            title: ''
+            title: '',
+            uploadJournalAddress: address.uploadJournal
         }
     },
     methods: {
@@ -55,15 +58,18 @@ export default {
                 this.$http.post(address.uploadArticle, data).then((res) => {
                     if (res.body.result) {
                         this.$notify({title: '上传成功'})
-                        this.visible = false
+                        this.visible = false;
                     } else {
                         this.$notify({title: '上传失败'})
                     }
                 })
             }
         },
-        uploadJournal() {
-
+        uploadJournalSuccess() {
+            this.$notify({title: '上传成功'})
+        },
+        uploadJournalError() {
+            this.$notify({title: '上传失败'})
         }
     }
 }
