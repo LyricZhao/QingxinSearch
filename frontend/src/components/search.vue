@@ -16,7 +16,7 @@
                 <el-table :data="tableData" border style="width: 95%; margin: 0px auto;">
                     <el-table-column prop="journal" label="期刊"/>
                     <el-table-column prop="title" label="标题"/>
-                    <el-table-column prop="content" label="内容"/>
+                    <el-table-column prop="contentSimple" label="内容"/>
                     <el-table-column label="操作">
                         <template slot-scope="scope">
                             <el-button v-show="!scope.row.deleted" @click="modifyItem(scope.row)" type="text" size="small"> 查看和修改 </el-button>
@@ -127,8 +127,11 @@ export default {
         handlePageChange(currentPage) {
             let start = this.pageSize * (currentPage - 1), end = Math.min(this.pageSize * currentPage, this.globalTableData.length)
             this.tableData = []
-            for (let i = start; i < end; ++ i)
+            for (let i = start; i < end; ++ i) {
+                let content = this.globalTableData[i].content
                 this.tableData.push(this.globalTableData[i])
+                this.tableData[i - start].contentSimple = content.substring(0, Math.min(content, 200)) + ' ...'
+            }
         },
         searchSubmit() {
             if (this.searchText === '') return

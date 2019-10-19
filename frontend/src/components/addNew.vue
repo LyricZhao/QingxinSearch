@@ -32,7 +32,7 @@ export default {
     name: 'manage',
     data() {
         return {
-            visible: true,
+            visible: false,
             journal: '',
             content: '',
             title: '',

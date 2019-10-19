@@ -1,6 +1,6 @@
 <template>
     <div class="main">
-        <el-menu background-color="#ffe5e5" :default-active="default_index" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+        <el-menu :default-active="default_index" class="el-menu-demo" mode="horizontal" @select="handleSelect">
             <el-menu-item index="index"> 清新搜索 </el-menu-item>
             <el-submenu index="submenu">
                 <template slot="title"> 管理 </template>
