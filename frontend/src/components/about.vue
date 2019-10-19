@@ -4,7 +4,7 @@
             <div>
                 <el-container>
                     <el-main>
-                        <h2 style="font-size: 5vh"> 清新搜索 v1.0 </h2>
+                        <h2 style="font-size: 5vh"> 清新搜索 v1.1 </h2>
                         <br>
                         <el-row style="font-size: 4vh">
                                 <el-col :span="12">
@@ -61,7 +61,7 @@ export default {
                     dangerouslyUseHTMLString: true,
                     showConfirmButton: false
                 }
-            )
+            ).catch(_ => {})
         }
     }
 }
