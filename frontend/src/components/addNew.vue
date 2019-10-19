@@ -55,6 +55,7 @@ export default {
                 this.$http.post(address.uploadArticle, data).then((res) => {
                     if (res.body.result) {
                         this.$notify({title: '上传成功'})
+                        this.visible = false
                     } else {
                         this.$notify({title: '上传失败'})
                     }

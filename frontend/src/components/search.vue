@@ -19,8 +19,9 @@
                     <el-table-column prop="content" label="内容"/>
                     <el-table-column label="操作">
                         <template slot-scope="scope">
-                            <el-button @click="modifyItem(scope.row)" type="text" size="small"> 查看和修改 </el-button>
-                            <el-button @click="deleteItem(scope.row)" type="text" size="small"> 删除 </el-button>
+                            <el-button v-show="!scope.row.deleted" @click="modifyItem(scope.row)" type="text" size="small"> 查看和修改 </el-button>
+                            <el-button v-show="!scope.row.deleted" @click="deleteItem(scope.row)" type="text" size="small"> 删除 </el-button>
+                            <el-tag v-show="scope.row.deleted" type="danger" size="small"> 已被删除 </el-tag>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -83,6 +84,18 @@ export default {
         },
         deleteItem(article) {
             this.$confirm('确认删除？').then(_ => {
+                let data = {
+                    id: article.id
+                }
+                this.$http.post(address.deleteArticle, data).then((res) => {
+                    if (res.body.result) {
+                        this.globalTableData[article.index].deleted = true
+                        this.handlePageChange(this.currentPage)
+                        this.$notify({title: '删除成功'})
+                    } else {
+                        this.$notify({title: '删除失败'})
+                    }
+                })
                 done();
             }).catch(_ => {});
         },
@@ -127,8 +140,10 @@ export default {
             }
             this.$http.post(address.search, data).then((res) => {
                 this.globalTableData = res.body.result
-                for (let i = 0; i < this.globalTableData.length; ++ i)
+                for (let i = 0; i < this.globalTableData.length; ++ i) {
+                    this.globalTableData[i].deleted = false
                     this.globalTableData[i].index = i
+                }
                 this.handlePageChange(1)
                 if (!this.tableData.length) {
                     this.$notify({title: '没有找到搜索结果'})

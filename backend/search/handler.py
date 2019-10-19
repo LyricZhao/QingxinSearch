@@ -75,7 +75,7 @@ def delete_article_db(id):
     article = Article.objects.get(id=id)
     words = get_words(article.title, article.content)
     delete_relationship_db(words, article)
-    Article.objects.delete(id=id)
+    article.delete()
 
 def modify_article_db(id, journal, title, content):
     article = Article.objects.get(id=id)
