@@ -12,7 +12,7 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="添加期刊">
-                            <el-upload drag :action="uploadJournalAddress" :show-file-list="false">
+                            <el-upload drag :on-success="uploadJournalSuccess" :on-error="uploadJournalError" :action="uploadJournalAddress" :show-file-list="false">
                                 <i class="el-icon-upload"></i>
                                 <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
                                 <div class="el-upload__tip" slot="tip">请上传zip压缩文件（可上传多个期刊，文件解压后目录格式为: 期刊号/文章.txt）</div>
@@ -57,10 +57,10 @@ export default {
                 }
                 this.$http.post(address.uploadArticle, data).then((res) => {
                     if (res.body.result) {
-                        this.$notify({title: '上传成功'})
+                        this.$notify({title: '上传成功', message: '任务已经提交到后台，可能需要一段时间，请耐心等待'})
                         this.visible = false;
                     } else {
-                        this.$notify({title: '上传失败'})
+                        this.$notify({title: '上传失败', message: '后台可能有任务在执行'})
                     }
                 })
             }

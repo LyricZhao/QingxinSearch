@@ -2,19 +2,24 @@ from django.http import HttpResponse
 from django.db.models import Q
 from django.http import JsonResponse
 from django.forms.models import model_to_dict
+from django.http import HttpResponseBadRequest
 
+import io
 import json
 import re
 import jieba
 import jieba.analyse
 import zipfile
 import chardet
+import threading
+import copy
 
 from .models import Passwd, Article, DictItem
 from .rank import PageRank
 
 filter_fulltext_score = 0.2
 filter_keyword_score = 0.55
+db_is_running = False
 
 def mlist_convert(mlist):
     return [model_to_dict(x) for x in mlist]
@@ -40,7 +45,7 @@ def word_filter(words):
             wset.add(word)
     words = []
     for word in wset:
-        filtered = re.sub('[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+', '', word)
+        filtered = re.sub('[\s+\.\!\?\=\/_,$%^*(+\"\']+|[+——！，。？《》、~@#￥%……&*·（）：；【】“”]+', '', word)
         if len(filtered):
             words.append(filtered)
     return words
@@ -51,12 +56,13 @@ def get_words(title, content):
     return word_filter(list(title_words) + list(content_words))
 
 def add_relationship_db(words, article):
+    bulk_create_arr = []
     for word in words:
-        try:
-            item = DictItem.objects.get(word=word)
-        except:
-            item = DictItem(word=word)
-            item.save()
+        if not DictItem.objects.filter(word=word).exists():
+            bulk_create_arr.append(DictItem(word=word))
+    DictItem.objects.bulk_create(bulk_create_arr)
+    for word in words:
+        item = DictItem.objects.get(word=word)
         item.ids.add(article)
         item.save()
 
@@ -68,10 +74,36 @@ def delete_relationship_db(words, article):
 
 def add_article_db(journal, title, content):
     words = get_words(title, content)
-    keys = jieba.analyse.extract_tags(content, topK=10)
+    keys = jieba.analyse.extract_tags(content, topK=10)    
     article = Article(journal=journal, title=title, content=content, keys='+'.join(keys))
     article.save()
     add_relationship_db(words, article)
+
+def add_articles_db(articles):
+    word_set = set()
+    word_map = {}
+    word_bulk = []
+    for article in articles:
+        journal, title, content = article[0], article[1], article[2]
+        keys = jieba.analyse.extract_tags(content, topK=10)
+        article_word_set = set()
+        for word in get_words(title, content):
+            word_set.add(word)
+            article_word_set.add(word)
+        article_inst = Article(journal=journal, title=title, content=content, keys='+'.join(keys))
+        article_inst.save()
+        for word in article_word_set:
+            if not word in word_map:
+                word_map[word] = []
+            word_map[word].append(article_inst)
+    for word in word_set:
+        if not DictItem.objects.filter(word=word).exists():
+            word_bulk.append(DictItem(word=word))
+    DictItem.objects.bulk_create(word_bulk)
+    for word in word_set:
+        item = DictItem.objects.get(word=word)
+        item.ids.add(*word_map[word])
+        item.save()
 
 def delete_article_db(id):
     article = Article.objects.get(id=id)
@@ -115,31 +147,39 @@ def upload_article(request):
         return HttpResponse(json.dumps({'result': False}))
     return HttpResponse(json.dumps({'result': True}))
 
+def save_zip_into_db(zip_file):
+    zip_file = io.BytesIO(zip_file)
+    global db_is_running
+    db_is_running = True
+    articles = []
+    with zipfile.ZipFile(zip_file, 'r') as zip:
+        for filename in zip.namelist():
+            original_filename = filename
+            filename = filename.encode('cp437').decode('utf-8')
+            if filename.startswith('_') or filename.startswith('.'):
+                continue
+            info = filename.split('/')
+            if len(info) != 2:
+                continue
+            journal, title = info[0], info[1]
+            if len(title) == 0:
+                continue
+            title = '.'.join(title.split('.')[0:-1])
+            with zip.open(original_filename) as content:
+                bytes_stream = content.read()
+                if chardet.detect(bytes_stream)['encoding'] == 'utf-8':
+                    content = bytes_stream.decode('utf-8')
+                else:
+                    content = bytes_stream.decode('gbk')
+                articles.append((journal, title, content))
+    add_articles_db(articles)
+    db_is_running = False
+
 def upload_journal(request):
-    try:
-        with zipfile.ZipFile(request.FILES['file'], 'r') as zip:
-            for filename in zip.namelist():
-                original_filename = filename
-                filename = filename.encode('cp437').decode('utf-8')
-                if filename.startswith('_') or filename.startswith('.'):
-                    continue
-                info = filename.split('/')
-                if len(info) != 2:
-                    continue
-                journal, title = info[0], info[1]
-                if len(title) == 0:
-                    continue
-                title = '.'.join(title.split('.')[0:-1])
-                with zip.open(original_filename) as content:
-                    bytes_stream = content.read()
-                    if chardet.detect(bytes_stream)['encoding'] == 'utf-8':
-                        content = bytes_stream.decode('utf-8')
-                    else:
-                        content = bytes_stream.decode('gbk')
-                    add_article_db(journal, title, content)
-                    print(title)
-    except:
-        return HttpResponse(json.dumps({'result': False}))
+    if db_is_running:
+        raise HttpResponseBadRequest
+    zip_file = request.FILES['file'].read()
+    threading.Thread(target=save_zip_into_db, kwargs={'zip_file': zip_file}).start()
     return HttpResponse(json.dumps({'result': True}))
 
 def search(request):
