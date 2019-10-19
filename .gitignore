@@ -8,6 +8,7 @@ package-lock.json
 __pycache__
 collection
 db.sqlite3
+qingxin.sqlite3
 
 # Editor directories and files
 .idea
