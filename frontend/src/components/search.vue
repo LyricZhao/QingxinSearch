@@ -63,14 +63,15 @@ export default {
             tableData: [],
             globalTableData: [],
             showResult: true,
-            searchText: '清华',
+            searchText: '',
             searchOption: '',
             modifyId: -1,
             modifyJournal: '',
             modifyTitle: '',
             modifyContent: '',
             modifyVisible: false,
-            modifyIndex: -1
+            modifyIndex: -1,
+            maxLength: 200
         }
     },
     methods: {
@@ -90,7 +91,7 @@ export default {
                 this.$http.post(address.deleteArticle, data).then((res) => {
                     if (res.body.result) {
                         this.globalTableData[article.index].deleted = true
-                        this.handlePageChange(this.currentPage)
+                        this.myHandlePageChange(this.currentPage)
                         this.$notify({title: '删除成功'})
                     } else {
                         this.$notify({title: '删除失败'})
@@ -117,7 +118,7 @@ export default {
                     if (res.body.result) {
                         this.$notify({title: '修改成功'})
                         this.globalTableData[this.modifyIndex] = data
-                        this.handlePageChange(this.currentPage)
+                        this.myHandlePageChange(this.currentPage)
                     } else {
                         this.$notify({title: '修改失败'})
                     }
@@ -125,12 +126,17 @@ export default {
             }
         },
         handlePageChange(currentPage) {
+            this.myHandlePageChange(currentPage)
+        },
+        myHandlePageChange(currentPage) {
             let start = this.pageSize * (currentPage - 1), end = Math.min(this.pageSize * currentPage, this.globalTableData.length)
             this.tableData = []
             for (let i = start; i < end; ++ i) {
                 let content = this.globalTableData[i].content
                 this.tableData.push(this.globalTableData[i])
-                this.tableData[i - start].contentSimple = content.substring(0, Math.min(content, 200)) + ' ...'
+                this.tableData[i - start].contentSimple = content.substring(0, Math.min(content.length, this.maxLength))
+                if(content.length > this.maxLength)
+                    this.tableData[i - start].contentSimple += '...'
             }
         },
         searchSubmit() {
@@ -147,7 +153,8 @@ export default {
                     this.globalTableData[i].deleted = false
                     this.globalTableData[i].index = i
                 }
-                this.handlePageChange(1)
+                this.currentPage = 1
+                this.myHandlePageChange(1)
                 if (!this.tableData.length) {
                     this.$notify({title: '没有找到搜索结果'})
                 }

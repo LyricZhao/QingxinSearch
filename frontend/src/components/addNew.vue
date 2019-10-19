@@ -57,19 +57,19 @@ export default {
                 }
                 this.$http.post(address.uploadArticle, data).then((res) => {
                     if (res.body.result) {
-                        this.$notify({title: '上传成功', message: '任务已经提交到后台，可能需要一段时间，请耐心等待'})
+                        this.$notify({title: '上传成功'})
                         this.visible = false;
                     } else {
-                        this.$notify({title: '上传失败', message: '后台可能有任务在执行'})
+                        this.$notify({title: '上传失败'})
                     }
                 })
             }
         },
         uploadJournalSuccess() {
-            this.$notify({title: '上传成功'})
+            this.$notify({title: '上传成功', message: '任务已经提交到后台，可能需要一段时间，请耐心等待'})
         },
         uploadJournalError() {
-            this.$notify({title: '上传失败'})
+            this.$notify({title: '上传失败', message: '后台可能有任务在执行'})
         }
     }
 }
