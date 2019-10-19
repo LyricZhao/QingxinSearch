@@ -20,14 +20,15 @@ def mlist_convert(mlist):
 def search_journal(journal):
     return mlist_convert(Article.objects.filter(journal=journal))
 
-def search_in_db(text, limit):
+def search_db(text, limit):
     keys = re.sub('[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+', '', text)
     keys = list(jieba.cut_for_search(keys))
-    index_arr, results = [], []
+    wset, results = set(), []
     for key in keys:
-        index_arr += DictItem.object.get(word=key)
-    for index in index_arr:
-        results.append(DictItem.object.get(id=index))
+        for article in DictItem.objects.get(word=key).ids.all():
+            if not article.id in wset:
+                wset.add(article.id)
+                results.append(model_to_dict(article))
     return PageRank().filter(keys, results, limit)
 
 def word_filter(words):
@@ -42,14 +43,12 @@ def word_filter(words):
             words.append(filtered)
     return words
 
-def add_article(journal, title, content):
-    id = Article.objects.count()
+def get_words(title, content):
     title_words = jieba.cut_for_search(title)
     content_words = jieba.cut(content)
-    words = word_filter(list(title_words) + list(content_words))
-    keys = jieba.analyse.extract_tags(content, topK=10)
-    article = Article(id=id, journal=journal, title=title, content=content, keys='+'.join(keys))
-    article.save()
+    return word_filter(list(title_words) + list(content_words))
+
+def add_relationship_db(words, article):
     for word in words:
         try:
             item = DictItem.objects.get(word=word)
@@ -57,11 +56,59 @@ def add_article(journal, title, content):
             item = DictItem(word=word)
             item.save()
         item.ids.add(article)
+        item.save()
+
+def delete_relationship_db(words, article):
+    for word in words:
+        item = DictItem.objects.get(word=word)
+        item.ids.remove(article)
+        item.save()
+
+def add_article_db(journal, title, content):
+    words = get_words(title, content)
+    keys = jieba.analyse.extract_tags(content, topK=10)
+    article = Article(journal=journal, title=title, content=content, keys='+'.join(keys))
+    article.save()
+    add_relationship_db(words, article)
+
+def delete_article_db(id):
+    article = Article.objects.get(id=id)
+    words = get_words(article.title, article.content)
+    delete_relationship_db(words, article)
+    Article.objects.delete(id=id)
+
+def modify_article_db(id, journal, title, content):
+    article = Article.objects.get(id=id)
+    words = get_words(article.title, article.content)
+    delete_relationship_db(words, article)
+    article.journal = journal
+    article.title = title
+    article.content = content
+    article.keys = '+'.join(jieba.analyse.extract_tags(content, topK=10))
+    article.save()
+    words = get_words(title, content)
+    add_relationship_db(words, article)
+
+def modify_article(request):
+    requestJson = json.loads(request.body)
+    # try:
+    modify_article_db(requestJson['id'], requestJson['journal'], requestJson['title'], requestJson['content'])
+    # except:
+    # return HttpResponse(json.dumps({'result': False}))
+    return HttpResponse(json.dumps({'result': True}))
+
+def delete_article(request):
+    requestJson = json.loads(request.body)
+    # try:
+    delete_article_db(requestJson['id'])
+    # except:
+    # return HttpResponse(json.dumps({'result': False}))
+    return HttpResponse(json.dumps({'result': True}))
 
 def upload_article(request):
     requestJson = json.loads(request.body)
     # try:
-    add_article(requestJson['journal'], requestJson['title'], requestJson['content'])
+    add_article_db(requestJson['journal'], requestJson['title'], requestJson['content'])
     # except:
         # return HttpResponse(json.dumps({'result': False}))
     return HttpResponse(json.dumps({'result': True}))
@@ -73,9 +120,9 @@ def search(request):
     if option == 'journal':
         result = search_journal(text)
     elif option == 'fulltext':
-        result = search_in_db(text, filter_fulltext_score)
+        result = search_db(text, filter_fulltext_score)
     else:
-        result = search_in_db(text, filter_keyword_score)
+        result = search_db(text, filter_keyword_score)
     return HttpResponse(json.dumps({'result': result}), content_type='application/json')
 
 def change_passwd(request):

@@ -3,7 +3,9 @@ const basic = {
     search: '/api/search',
     changePasswd: '/api/changePasswd',
     uploadArticle: '/api/uploadArticle',
-    uploadJournal: '/api/uploadJournal'
+    uploadJournal: '/api/uploadJournal',
+    modifyArticle: '/api/modifyArticle',
+    deleteArticle: '/api/deleteArticle'
 }
 
 export default {
@@ -11,5 +13,7 @@ export default {
     search: basic.backend + basic.search,
     changePasswd: basic.backend + basic.changePasswd,
     uploadArticle: basic.backend + basic.uploadArticle,
-    uploadJournal: basic.backend + basic.uploadJournal
+    uploadJournal: basic.backend + basic.uploadJournal,
+    modifyArticle: basic.backend + basic.modifyArticle,
+    deleteArticle: basic.backend + basic.deleteArticle
 }

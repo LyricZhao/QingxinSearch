@@ -30,10 +30,10 @@ export default {
     name: 'manage',
     data() {
         return {
-            visible: true,
-            journal: '第0期',
-            content: '测试内容',
-            title: '清华'
+            visible: false,
+            journal: '',
+            content: '',
+            title: ''
         }
     },
     methods: {

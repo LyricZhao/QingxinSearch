@@ -45,8 +45,8 @@ export default {
                 case 'change':
                     this.$refs.changePasswd.show()
                     break
-                case 'manage':
-                    this.$refs.manage.show()
+                case 'addNew':
+                    this.$refs.addNew.show()
                     break
             }
         }
