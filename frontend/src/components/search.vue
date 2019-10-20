@@ -17,23 +17,29 @@
                     <el-table-column prop="journal" label="期刊"/>
                     <el-table-column prop="title" label="标题"/>
                     <el-table-column prop="contentSimple" label="内容"/>
-                    <el-table-column label="操作" v-if="logined">
+                    <el-table-column label="操作">
                         <template slot-scope="scope">
-                            <el-button v-show="!scope.row.deleted" @click="modifyItem(scope.row)" type="text" size="small"> 查看和修改 </el-button>
-                            <el-button v-show="!scope.row.deleted" @click="deleteItem(scope.row)" type="text" size="small"> 删除 </el-button>
-                            <el-tag v-show="scope.row.deleted" type="danger" size="small"> 已被删除 </el-tag>
+                            <el-button v-show="!scope.row.deleted" @click="viewItem(scope.row)" type="text" size="small"> 查看 </el-button>
+                            <el-button v-show="!scope.row.deleted" v-if="logined" @click="modifyItem(scope.row)" type="text" size="small"> 修改 </el-button>
+                            <el-button v-show="!scope.row.deleted" v-if="logined" @click="deleteItem(scope.row)" type="text" size="small"> 删除 </el-button>
+                            <el-tag v-if="logined" v-show="scope.row.deleted" type="danger" size="small"> 已被删除 </el-tag>
                         </template>
                     </el-table-column>
                 </el-table>
                 </template>
             <br>
-            <el-pagination :current-page="currentPage" @current-change="handlePageChange" layout="prev, pager, next" :total="tableData.length" />
+            <el-pagination :current-page.sync="currentPage" :page-size="pageSize" @current-change="handlePageChange" layout="prev, pager, next" :total="globalTableData.length" />
         </div>
         <el-dialog :visible.sync="modifyVisible">
             <el-input placeholder="期刊" v-model="modifyJournal" clearable/> <br> <br>
             <el-input placeholder="标题" v-model="modifyTitle" clearable/> <br> <br>
             <el-input placeholder="内容" v-model="modifyContent" type="textarea" :rows="10"/> <br> <br>
             <el-button @click="modifySubmit" type="primary">修改</el-button>
+        </el-dialog>
+        <el-dialog :visible.sync="viewVisible">
+            <el-input placeholder="期刊" v-model="viewJournal"/> <br> <br>
+            <el-input placeholder="标题" v-model="viewTitle"/> <br> <br>
+            <el-input placeholder="内容" v-model="viewContent" type="textarea" :rows="10"/> <br> <br>
         </el-dialog>
     </div>
 </template>
@@ -71,13 +77,23 @@ export default {
             modifyContent: '',
             modifyVisible: false,
             modifyIndex: -1,
+            viewJournal: '',
+            viewTitle: '',
+            viewContent: '',
+            viewVisible: false,
             maxLength: 200,
-            logined: false
+            logined: false,
         }
     },
     methods: {
         setLogined(logined) {
             this.logined = logined
+        },
+        viewItem(article) {
+            this.viewJournal = article.journal
+            this.viewTitle = article.title
+            this.viewContent = article.content
+            this.viewVisible = true
         },
         modifyItem(article) {
             this.modifyId = article.id
@@ -118,6 +134,7 @@ export default {
                     title: this.modifyTitle,
                     content: this.modifyContent
                 }
+                this.modifyVisible = false
                 this.$http.post(address.modifyArticle, data).then((res) => {
                     if (res.body.result) {
                         this.$notify({title: '修改成功'})
@@ -126,11 +143,14 @@ export default {
                     } else {
                         this.$notify({title: '修改失败'})
                     }
+                }).catch(() => {
+                    this.$notify({title: '修改失败'})
                 })
             }
         },
         handlePageChange(currentPage) {
             this.myHandlePageChange(currentPage)
+            document.body.scrollTop = document.documentElement.scrollTop = 0
         },
         myHandlePageChange(currentPage) {
             let start = this.pageSize * (currentPage - 1), end = Math.min(this.pageSize * currentPage, this.globalTableData.length)

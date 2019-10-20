@@ -17,7 +17,7 @@ import copy
 from .models import Passwd, Article, DictItem
 from .rank import PageRank
 
-filter_fulltext_score = 0.2
+filter_fulltext_score = 0.1
 filter_keyword_score = 0.55
 db_is_running = False
 
@@ -25,17 +25,23 @@ def mlist_convert(mlist):
     return [model_to_dict(x) for x in mlist]
 
 def search_journal(journal):
-    return mlist_convert(Article.objects.filter(journal=journal))
+    try:
+        return mlist_convert(Article.objects.filter(journal=journal))
+    except:
+        return []
 
 def search_db(text, limit):
     keys = re.sub('[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*·（）：；【】“”]+', '', text)
     keys = list(jieba.cut_for_search(keys))
     wset, results = set(), []
     for key in keys:
-        for article in DictItem.objects.get(word=key).ids.all():
-            if not article.id in wset:
-                wset.add(article.id)
-                results.append(model_to_dict(article))
+        try:
+            for article in DictItem.objects.get(word=key).ids.all():
+                if not article.id in wset:
+                    wset.add(article.id)
+                    results.append(model_to_dict(article))
+        except:
+            pass
     return PageRank().filter(keys, results, limit)
 
 def word_filter(words):

@@ -12,7 +12,8 @@
             <el-menu-item index="about"> 关于 </el-menu-item>
         </el-menu>
 
-        <el-dialog title="请输入数据库密码" :visible.sync="loginDialogVisible">
+        <el-dialog :visible.sync="loginDialogVisible">
+            <h3 style="font-size: 3vh"> 请输入数据库密码 </h3>
             <el-input placeholder="请输入数据库密码" v-model="loginPassword" show-password/> <br> <br>
             <el-button type="primary" @click="submitLogin">确定</el-button>
         </el-dialog>
