@@ -1,7 +1,7 @@
 <template>
     <div class="main">
         <div style="margin-top: 15px;">
-            <el-input placeholder="搜索内容" v-model="searchText" class="input-with-select" style="width: 95%; margin: 0px auto;">
+            <el-input placeholder="搜索内容" v-model="searchText" class="input-with-select" @keyup.enter.native="searchSubmit" style="width: 95%; margin: 0px auto;">
                 <el-select v-model="searchOption" slot="prepend" placeholder="搜索选项">
                     <el-option label="关键词" value="keyword" />
                     <el-option label="全文" value="fulltext" />
@@ -34,7 +34,7 @@
             <el-input placeholder="期刊" v-model="modifyJournal" clearable/> <br> <br>
             <el-input placeholder="标题" v-model="modifyTitle" clearable/> <br> <br>
             <el-input placeholder="内容" v-model="modifyContent" type="textarea" :rows="10"/> <br> <br>
-            <el-button @click="modifySubmit" type="primary">修改</el-button>
+            <el-button @click="submitModify" type="primary">修改</el-button>
         </el-dialog>
         <el-dialog :visible.sync="viewVisible">
             <el-input placeholder="期刊" v-model="viewJournal"/> <br> <br>
@@ -120,7 +120,7 @@ export default {
                 done();
             }).catch(_ => {});
         },
-        modifySubmit() {
+        submitModify() {
             if (this.modifyJournal === '' || this.modifyTitle === '' || this.modifyContent === '') {
                 this.$notify({
                     title: '错误',
