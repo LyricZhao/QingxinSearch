@@ -10,5 +10,6 @@ urlpatterns = [
     path('uploadJournal', handler.upload_journal),
     path('modifyArticle', handler.modify_article),
     path('deleteArticle', handler.delete_article),
-    path('deleteAll', handler.delete_all)
+    path('deleteAll', handler.delete_all),
+    path('login', handler.login)
 ]

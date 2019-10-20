@@ -204,20 +204,30 @@ def change_passwd(request):
         db_pass = Passwd.objects.get(id='db')
         db_pass.passwd = new_pass
         db_pass.save()
-        return HttpResponse(json.dumps({'result': True}))
     except:
         return HttpResponse(json.dumps({'result': False}))
+    return HttpResponse(json.dumps({'result': True}))
 
 def set_passwd(request):
     passwd = request.GET['passwd']
     field = request.GET['field']
-    try:
+    if Passwd.objects.filter(id=field).exists():
         passwd_obj = Passwd.objects.get(id=field)
-        passed_obj.passwd = passwd
+        passwd_obj.passwd = passwd
         passwd_obj.save()
-    except:
+    else:
         Passwd.objects.create(id=field, passwd=passwd)
     return HttpResponse('success')
+
+def login(request):
+    requestJson = json.loads(request.body)
+    db_pass = requestJson['pass']
+    try:
+        if db_pass != Passwd.objects.get(id='db').passwd:
+            return HttpResponse(json.dumps({'result': False}))
+    except:
+        return HttpResponse(json.dumps({'result': False}))
+    return HttpResponse(json.dumps({'result': True})) 
 
 def delete_all(request):
     Article.objects.all().delete()

@@ -1,7 +1,7 @@
 <template>
     <div class="main">
         <div class="topbar">
-            <topbar ref="topbar" />
+            <topbar ref="topbar" @successLogin="onLogin" @quit="onQuit" />
         </div>
         <div class="search">
             <search ref="search" />
@@ -29,6 +29,14 @@ export default {
         topbar: topbar,
         search: search,
         copyright: copyright
+    },
+    methods: {
+        onLogin() {
+            this.$refs.search.setLogined(true)
+        },
+        onQuit() {
+            this.$refs.search.setLogined(false)
+        }
     }
 }
 

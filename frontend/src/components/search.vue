@@ -17,7 +17,7 @@
                     <el-table-column prop="journal" label="期刊"/>
                     <el-table-column prop="title" label="标题"/>
                     <el-table-column prop="contentSimple" label="内容"/>
-                    <el-table-column label="操作">
+                    <el-table-column label="操作" v-if="logined">
                         <template slot-scope="scope">
                             <el-button v-show="!scope.row.deleted" @click="modifyItem(scope.row)" type="text" size="small"> 查看和修改 </el-button>
                             <el-button v-show="!scope.row.deleted" @click="deleteItem(scope.row)" type="text" size="small"> 删除 </el-button>
@@ -71,10 +71,14 @@ export default {
             modifyContent: '',
             modifyVisible: false,
             modifyIndex: -1,
-            maxLength: 200
+            maxLength: 200,
+            logined: false
         }
     },
     methods: {
+        setLogined(logined) {
+            this.logined = logined
+        },
         modifyItem(article) {
             this.modifyId = article.id
             this.modifyJournal = article.journal
