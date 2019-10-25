@@ -7,7 +7,7 @@
                         <el-tab-pane label="添加文章">
                             <el-input placeholder="期刊" v-model="journal" clearable/> <br> <br>
                             <el-input placeholder="标题" v-model="title" clearable/> <br> <br>
-                            <el-input placeholder="内容" v-model="content" type="textarea" :rows="10"/> <br> <br>
+                            <quill-editor ref="quillEditor" v-model="content" :options="quillOption"/> <br> <br>
                             <el-button @click="uploadArticle" type="primary">上传</el-button>
                         </el-tab-pane>
 
@@ -27,16 +27,20 @@
 <script>
 
 import address from '@/address.js'
+import utility from '@/utility.js'
 
 export default {
     name: 'manage',
     data() {
         return {
-            visible: false,
+            visible: true,
             journal: '',
             content: '',
             title: '',
-            uploadJournalAddress: address.uploadJournal
+            uploadJournalAddress: address.uploadJournal,
+            quillOption: {
+                placeholder: '内容'
+            }
         }
     },
     methods: {
@@ -53,7 +57,8 @@ export default {
                 let data = {
                     journal: this.journal,
                     title: this.title,
-                    content: this.content
+                    content: this.content,
+                    text: this.editor.getText()
                 }
                 this.$http.post(address.uploadArticle, data).then((res) => {
                     if (res.body.result) {
@@ -72,6 +77,11 @@ export default {
         uploadJournalError() {
             this.$notify({title: '上传失败', message: '后台可能有任务在执行'})
         }
-    }
+    },
+    computed: {
+        editor() {
+            return this.$refs.quillEditor.quill
+        }
+    },
 }
 </script>

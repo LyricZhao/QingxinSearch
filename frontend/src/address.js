@@ -6,6 +6,7 @@ const basic = {
     uploadJournal: '/api/uploadJournal',
     modifyArticle: '/api/modifyArticle',
     deleteArticle: '/api/deleteArticle',
+    requestContent: '/api/requestContent',
     login: '/api/login'
 }
 
@@ -17,5 +18,6 @@ export default {
     uploadJournal: basic.backend + basic.uploadJournal,
     modifyArticle: basic.backend + basic.modifyArticle,
     deleteArticle: basic.backend + basic.deleteArticle,
+    requestContent: basic.backend + basic.requestContent,
     login: basic.backend + basic.login
 }

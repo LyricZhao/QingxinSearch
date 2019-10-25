@@ -16,7 +16,7 @@
                 <el-table :data="tableData" border style="width: 95%; margin: 0px auto;">
                     <el-table-column prop="journal" label="期刊"/>
                     <el-table-column prop="title" label="标题"/>
-                    <el-table-column prop="contentSimple" label="内容"/>
+                    <el-table-column prop="brief" label="内容"/>
                     <el-table-column label="操作">
                         <template slot-scope="scope">
                             <el-button v-show="!scope.row.deleted" @click="viewItem(scope.row)" type="text" size="small"> 查看 </el-button>
@@ -33,13 +33,13 @@
         <el-dialog :visible.sync="modifyVisible">
             <el-input placeholder="期刊" v-model="modifyJournal" clearable/> <br> <br>
             <el-input placeholder="标题" v-model="modifyTitle" clearable/> <br> <br>
-            <el-input placeholder="内容" v-model="modifyContent" type="textarea" :rows="10"/> <br> <br>
+            <quill-editor ref="modifyQuillEditor" v-model="modifyContent" :options="modifyOption"/> <br> <br>
             <el-button @click="submitModify" type="primary">修改</el-button>
         </el-dialog>
         <el-dialog :visible.sync="viewVisible">
             <el-input placeholder="期刊" v-model="viewJournal"/> <br> <br>
             <el-input placeholder="标题" v-model="viewTitle"/> <br> <br>
-            <el-input placeholder="内容" v-model="viewContent" type="textarea" :rows="10"/> <br> <br>
+            <quill-editor ref="viewQuillEditor" v-model="viewContent" :options="viewOption"/> <br> <br>
         </el-dialog>
     </div>
 </template>
@@ -56,6 +56,7 @@
 <script>
 
 import address from '@/address.js'
+import utility from '@/utility.js'
 
 export default {
     name: 'search',
@@ -83,6 +84,13 @@ export default {
             viewVisible: false,
             maxLength: 200,
             logined: false,
+            viewOption: {
+                placeholder: '内容',
+                readOnly: true
+            },
+            modifyOption: {
+                placeholder: '内容'
+            }
         }
     },
     methods: {
@@ -90,18 +98,36 @@ export default {
             this.logined = logined
         },
         viewItem(article) {
-            this.viewJournal = article.journal
-            this.viewTitle = article.title
-            this.viewContent = article.content
-            this.viewVisible = true
+            let data = {
+                id: article.index
+            }
+            this.$http.post(address.requestContent, data).then((res) => {
+                if (res.body.result) {
+                    this.viewJournal = article.journal
+                    this.viewTitle = article.title
+                    this.viewContent = res.body.content
+                    this.viewVisible = true
+                } else {
+                    this.$notify({title: '获取数据失败'})
+                }
+            })
         },
         modifyItem(article) {
-            this.modifyId = article.id
-            this.modifyJournal = article.journal
-            this.modifyTitle = article.title
-            this.modifyContent = article.content
-            this.modifyVisible = true
-            this.modifyIndex = article.index
+            let data = {
+                id: article.index
+            }
+            this.$http.post(address.requestContent, data).then((res) => {
+                if (res.body.result) {
+                    this.modifyId = article.id
+                    this.modifyJournal = article.journal
+                    this.modifyTitle = article.title
+                    this.modifyContent = res.body.content
+                    this.modifyVisible = true
+                    this.modifyIndex = article.index
+                } else {
+                    this.$notify({title: '获取数据失败'})
+                }
+            })
         },
         deleteItem(article) {
             this.$confirm('确认删除？').then(_ => {
@@ -132,6 +158,7 @@ export default {
                     id: this.modifyId,
                     journal: this.modifyJournal,
                     title: this.modifyTitle,
+                    text: this.modifyEditor.getText(),
                     content: this.modifyContent
                 }
                 this.modifyVisible = false
@@ -156,12 +183,10 @@ export default {
             let start = this.pageSize * (currentPage - 1), end = Math.min(this.pageSize * currentPage, this.globalTableData.length)
             this.tableData = []
             for (let i = start; i < end; ++ i) {
-                let content = this.globalTableData[i].content
                 this.tableData.push(this.globalTableData[i])
-                this.tableData[i - start].contentSimple = content.substring(0, Math.min(content.length, this.maxLength))
-                if(content.length > this.maxLength)
-                    this.tableData[i - start].contentSimple += '...'
+                this.tableData[i - start].brief = utility.getBrief(this.globalTableData[i].text)
             }
+                
         },
         searchSubmit() {
             if (this.searchText === '') return
@@ -183,6 +208,14 @@ export default {
                     this.$notify({title: '没有找到搜索结果'})
                 }
             })
+        }
+    },
+    computed: {
+        modifyEditor() {
+            return this.$refs.modifyQuillEditor.quill
+        },
+        viewEditor() {
+            return this.$refs.viewQuillEditor.quill
         }
     }
 }
