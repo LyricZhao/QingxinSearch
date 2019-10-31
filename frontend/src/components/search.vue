@@ -30,13 +30,13 @@
             <br>
             <el-pagination :current-page.sync="currentPage" :page-size="pageSize" @current-change="handlePageChange" layout="prev, pager, next" :total="globalTableData.length" />
         </div>
-        <el-dialog :visible.sync="modifyVisible">
+        <el-dialog width="92%" :visible.sync="modifyVisible">
             <el-input placeholder="期刊" v-model="modifyJournal" clearable/> <br> <br>
             <el-input placeholder="标题" v-model="modifyTitle" clearable/> <br> <br>
             <quill-editor ref="modifyQuillEditor" v-model="modifyContent" :options="modifyOption"/> <br> <br>
             <el-button @click="submitModify" type="primary">修改</el-button>
         </el-dialog>
-        <el-dialog :visible.sync="viewVisible">
+        <el-dialog width="92%" :visible.sync="viewVisible">
             <el-input placeholder="期刊" v-model="viewJournal"/> <br> <br>
             <el-input placeholder="标题" v-model="viewTitle"/> <br> <br>
             <quill-editor ref="viewQuillEditor" v-model="viewContent" :options="viewOption"/> <br> <br>

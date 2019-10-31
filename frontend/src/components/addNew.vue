@@ -1,6 +1,6 @@
 <template>
     <div class="main">
-        <el-dialog :visible.sync="visible">
+        <el-dialog width="92%" :visible.sync="visible">
             <div>
                 <h3 style="font-size: 3vh"> 添加数据条目 </h3>
                   <el-tabs tab-position="left">
