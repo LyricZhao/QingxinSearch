@@ -60,9 +60,7 @@ import utility from '@/utility.js'
 
 export default {
     name: 'search',
-    componenets: {
-
-    },
+    componenets: {},
     data() {
         return {
             currentPage: 1,
@@ -99,9 +97,11 @@ export default {
         },
         viewItem(article) {
             let data = {
-                id: article.index
+                id: article.id
             }
+            console.log(data.id)
             this.$http.post(address.requestContent, data).then((res) => {
+                console.log(res)
                 if (res.body.result) {
                     this.viewJournal = article.journal
                     this.viewTitle = article.title
@@ -114,7 +114,7 @@ export default {
         },
         modifyItem(article) {
             let data = {
-                id: article.index
+                id: article.id
             }
             this.$http.post(address.requestContent, data).then((res) => {
                 if (res.body.result) {

@@ -64,6 +64,9 @@ export default {
                     if (res.body.result) {
                         this.$notify({title: '上传成功'})
                         this.visible = false;
+                        this.journal = ''
+                        this.content = ''
+                        this.title = ''
                     } else {
                         this.$notify({title: '上传失败'})
                     }
