@@ -21,8 +21,16 @@ filter_fulltext_score = 0.1
 filter_keyword_score = 0.55
 db_is_running = False
 
+def get_model_dict(article):
+    return {
+        'journal': article.journal,
+        'title': article.title,
+        'text': article.text,
+        'id': article.id
+    }
+
 def mlist_convert(mlist):
-    return [model_to_dict(x) for x in mlist]
+    return [get_model_dict(x) for x in mlist]
 
 def search_journal(journal):
     try:
@@ -56,10 +64,10 @@ def word_filter(words):
             words.append(filtered)
     return words
 
-def get_words(title, content):
+def get_words(title, text):
     title_words = jieba.cut_for_search(title)
-    content_words = jieba.cut(content)
-    return word_filter(list(title_words) + list(content_words))
+    text_words = jieba.cut(text)
+    return word_filter(list(title_words) + list(text_words))
 
 def add_relationship_db(words, article):
     bulk_create_arr = []
@@ -78,10 +86,10 @@ def delete_relationship_db(words, article):
         item.ids.remove(article)
         item.save()
 
-def add_article_db(journal, title, content):
-    words = get_words(title, content)
-    keys = jieba.analyse.extract_tags(content, topK=10)    
-    article = Article(journal=journal, title=title, content=content, keys='+'.join(keys))
+def add_article_db(journal, title, text, content):
+    words = get_words(title, text)
+    keys = jieba.analyse.extract_tags(text, topK=10)    
+    article = Article(journal=journal, title=title, text=text, content=content, keys='+'.join(keys))
     article.save()
     add_relationship_db(words, article)
 
@@ -90,13 +98,13 @@ def add_articles_db(articles):
     word_map = {}
     word_bulk = []
     for article in articles:
-        journal, title, content = article[0], article[1], article[2]
-        keys = jieba.analyse.extract_tags(content, topK=10)
+        journal, title, text, content = article[0], article[1], article[2], article[2]
+        keys = jieba.analyse.extract_tags(text, topK=10)
         article_word_set = set()
-        for word in get_words(title, content):
+        for word in get_words(title, text):
             word_set.add(word)
             article_word_set.add(word)
-        article_inst = Article(journal=journal, title=title, content=content, keys='+'.join(keys))
+        article_inst = Article(journal=journal, title=title, text=text, content=content, keys='+'.join(keys))
         article_inst.save()
         for word in article_word_set:
             if not word in word_map:
@@ -113,26 +121,31 @@ def add_articles_db(articles):
 
 def delete_article_db(id):
     article = Article.objects.get(id=id)
-    words = get_words(article.title, article.content)
+    words = get_words(article.title, article.text)
     delete_relationship_db(words, article)
     article.delete()
 
-def modify_article_db(id, journal, title, content):
+def modify_article_db(id, journal, title, text, content):
     article = Article.objects.get(id=id)
-    words = get_words(article.title, article.content)
+    words = get_words(article.title, article.text)
     delete_relationship_db(words, article)
     article.journal = journal
     article.title = title
+    article.text = text
     article.content = content
-    article.keys = '+'.join(jieba.analyse.extract_tags(content, topK=10))
+    article.keys = '+'.join(jieba.analyse.extract_tags(text, topK=10))
     article.save()
-    words = get_words(title, content)
+    words = get_words(title, text)
     add_relationship_db(words, article)
+
+def request_content_db(id):
+    article = Article.objects.get(id=id)
+    return article.content
 
 def modify_article(request):
     requestJson = json.loads(request.body)
     try:
-        modify_article_db(requestJson['id'], requestJson['journal'], requestJson['title'], requestJson['content'])
+        modify_article_db(requestJson['id'], requestJson['journal'], requestJson['title'], requestJson['text'], requestJson['content'])
     except:
         return HttpResponse(json.dumps({'result': False}))
     return HttpResponse(json.dumps({'result': True}))
@@ -148,10 +161,18 @@ def delete_article(request):
 def upload_article(request):
     requestJson = json.loads(request.body)
     try:
-        add_article_db(requestJson['journal'], requestJson['title'], requestJson['content'])
+        add_article_db(requestJson['journal'], requestJson['title'], requestJson['text'], requestJson['content'])
     except:
         return HttpResponse(json.dumps({'result': False}))
     return HttpResponse(json.dumps({'result': True}))
+
+def request_content(request):
+    requestJson = json.loads(request.body)
+    try:
+        content = request_content_db(requestJson['id'])
+        return HttpResponse(json.dumps({'result': True, 'content': content}))
+    except:
+        return HttpResponse(json.dumps({'result': False}))
 
 def save_zip_into_db(zip_file):
     zip_file = io.BytesIO(zip_file)

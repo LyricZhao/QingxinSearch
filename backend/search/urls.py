@@ -11,5 +11,6 @@ urlpatterns = [
     path('modifyArticle', handler.modify_article),
     path('deleteArticle', handler.delete_article),
     path('deleteAll', handler.delete_all),
+    path('requestContent', handler.request_content),
     path('login', handler.login)
 ]
