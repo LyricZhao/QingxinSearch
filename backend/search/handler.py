@@ -210,7 +210,7 @@ def save_zip_into_db(zip_file):
 
 def upload_journal(request):
     if db_is_running:
-        raise HttpResponseBadRequest
+        return HttpResponseBadRequest()
     zip_file = request.FILES['file'].read()
     threading.Thread(target=save_zip_into_db, kwargs={'zip_file': zip_file}).start()
     return HttpResponse(json.dumps({'result': True}))
