@@ -8,7 +8,8 @@ const basic = {
     modifyArticle: '/api/modifyArticle',
     deleteArticle: '/api/deleteArticle',
     requestContent: '/api/requestContent',
-    login: '/api/login'
+    login: '/api/login',
+    runningStatus: '/api/runningStatus'
 }
 
 export default {
@@ -20,5 +21,6 @@ export default {
     modifyArticle: basic.backend + basic.modifyArticle,
     deleteArticle: basic.backend + basic.deleteArticle,
     requestContent: basic.backend + basic.requestContent,
-    login: basic.backend + basic.login
+    login: basic.backend + basic.login,
+    runningStatus: basic.backend + basic.runningStatus
 }

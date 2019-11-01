@@ -8,6 +8,7 @@
                 <el-menu-item index="addNew" v-show="logined"> 添加数据词条 </el-menu-item>
                 <el-menu-item index="quit" v-show="logined"> 注销 </el-menu-item>
                 <el-menu-item index="login"  v-show="!logined"> 登录 </el-menu-item>
+                <el-menu-item index="status" v-show="logined"> 查看运行状态 </el-menu-item>
             </el-submenu>
             <el-menu-item index="about"> 关于 </el-menu-item>
         </el-menu>
@@ -67,7 +68,14 @@ export default {
                     this.logined = false
                     this.$emit('quit')
                     this.$notify({title: '注销成功'})
+                case 'status':
+                    this.checkStatus()
             }
+        },
+        checkStatus() {
+            this.$http.post(address.runningStatus, {}).then((res) => {
+                this.$notify({title: res.body.result ? '正在运行' : '空闲'})
+            })
         },
         submitLogin() {
             if (this.loginPassword === '') {

@@ -268,3 +268,6 @@ def delete_all(request):
     Article.objects.all().delete()
     DictItem.objects.all().delete()
     return HttpResponse('success')
+
+def running_status(request):
+    return HttpResponse(json.dumps({'result': db_is_running}))

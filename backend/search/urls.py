@@ -12,5 +12,6 @@ urlpatterns = [
     path('deleteArticle', handler.delete_article),
     path('deleteAll', handler.delete_all),
     path('requestContent', handler.request_content),
-    path('login', handler.login)
+    path('login', handler.login),
+    path('runningStatus', handler.running_status)
 ]
