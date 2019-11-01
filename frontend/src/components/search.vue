@@ -99,9 +99,7 @@ export default {
             let data = {
                 id: article.id
             }
-            console.log(data.id)
             this.$http.post(address.requestContent, data).then((res) => {
-                console.log(res)
                 if (res.body.result) {
                     this.viewJournal = article.journal
                     this.viewTitle = article.title

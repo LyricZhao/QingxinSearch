@@ -1,5 +1,6 @@
 const basic = {
-    backend: 'http://localhost:8000',
+    backend: 'http://182.92.119.20',
+    // backend: 'http://localhost:8000',
     search: '/api/search',
     changePasswd: '/api/changePasswd',
     uploadArticle: '/api/uploadArticle',
