@@ -68,8 +68,10 @@ export default {
                     this.logined = false
                     this.$emit('quit')
                     this.$notify({title: '注销成功'})
+                    break
                 case 'status':
                     this.checkStatus()
+                    break
             }
         },
         checkStatus() {

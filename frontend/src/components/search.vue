@@ -163,7 +163,7 @@ export default {
                 this.$http.post(address.modifyArticle, data).then((res) => {
                     if (res.body.result) {
                         this.$notify({title: '修改成功'})
-                        this.globalTableData[this.modifyIndex] = data
+                        this.globalTableData[this.modifyIndex] = res.body.modified
                         this.myHandlePageChange(this.currentPage)
                     } else {
                         this.$notify({title: '修改失败', message: '后台可能有任务在执行'})
@@ -180,11 +180,8 @@ export default {
         myHandlePageChange(currentPage) {
             let start = this.pageSize * (currentPage - 1), end = Math.min(this.pageSize * currentPage, this.globalTableData.length)
             this.tableData = []
-            for (let i = start; i < end; ++ i) {
+            for (let i = start; i < end; ++ i)
                 this.tableData.push(this.globalTableData[i])
-                this.tableData[i - start].brief = utility.getBrief(this.globalTableData[i].text)
-            }
-                
         },
         searchSubmit() {
             if (this.searchText === '') return

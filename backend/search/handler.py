@@ -21,12 +21,25 @@ filter_fulltext_score = 0.1
 filter_keyword_score = 0.55
 db_is_running = False
 
+def get_brief(text):
+    if len(text) < 50:
+        return text
+    return text[0:48] + '...'
+
 def get_model_dict(article):
     return {
         'journal': article.journal,
         'title': article.title,
-        'text': article.text,
+        'brief': get_brief(article.text),
         'id': article.id
+    }
+
+def simplify(article):
+    return {
+        'journal': article['journal'],
+        'title': article['title'],
+        'brief': get_brief(article['text']),
+        'id': article['id']
     }
 
 def mlist_convert(mlist):
@@ -50,7 +63,8 @@ def search_db(text, limit):
                     results.append(model_to_dict(article))
         except:
             pass
-    return PageRank().filter(keys, results, limit)
+    sorted = PageRank().filter(keys, results, limit)
+    return [simplify(article) for article in sorted]
 
 def word_filter(words):
     wset = set()
@@ -137,6 +151,7 @@ def modify_article_db(id, journal, title, text, content):
     article.save()
     words = get_words(title, text)
     add_relationship_db(words, article)
+    return get_model_dict(article)
 
 def request_content_db(id):
     article = Article.objects.get(id=id)
@@ -147,10 +162,10 @@ def modify_article(request):
         return HttpResponse(json.dumps({'result': False}))
     requestJson = json.loads(request.body)
     try:
-        modify_article_db(requestJson['id'], requestJson['journal'], requestJson['title'], requestJson['text'], requestJson['content'])
+        modified = modify_article_db(requestJson['id'], requestJson['journal'], requestJson['title'], requestJson['text'], requestJson['content'])
     except:
         return HttpResponse(json.dumps({'result': False}))
-    return HttpResponse(json.dumps({'result': True}))
+    return HttpResponse(json.dumps({'result': True, 'modified': modified}))
 
 def delete_article(request):
     if db_is_running:
