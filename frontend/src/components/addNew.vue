@@ -12,7 +12,7 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="添加期刊">
-                            <el-upload drag :on-success="uploadJournalSuccess" :on-error="uploadJournalError" :action="uploadJournalAddress" :show-file-list="false">
+                            <el-upload :before-upload="beforeUpload" drag :on-success="uploadJournalSuccess" :on-error="uploadJournalError" :action="uploadJournalAddress" :show-file-list="false">
                                 <i class="el-icon-upload"></i>
                                 <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
                                 <div class="el-upload__tip" slot="tip">请上传zip压缩文件（可上传多个期刊，文件解压后目录格式为: 期刊号/文章.txt）</div>
@@ -46,6 +46,16 @@ export default {
     methods: {
         show() {
             this.visible = true
+        },
+        beforeUpload(file) {
+            if (file.size / 1024 / 1024 > 10) {
+                this.$notify({
+                    title: '错误',
+                    message: '文件大小不能超过10M'
+                })
+                return false
+            }
+            return true
         },
         uploadArticle() {
             if (this.article === '' || this.content === '' || this.title === '') {
