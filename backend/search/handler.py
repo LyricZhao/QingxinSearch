@@ -196,32 +196,35 @@ def request_content(request):
         return HttpResponse(json.dumps({'result': False}))
 
 def save_zip_into_db(zip_file):
-    zip_file = io.BytesIO(zip_file)
-    global db_is_running
-    db_is_running = True
-    articles = []
-    with zipfile.ZipFile(zip_file, 'r') as zip:
-        for filename in zip.namelist():
-            original_filename = filename
-            filename = filename.encode('cp437').decode('utf-8')
-            if filename.startswith('_') or filename.startswith('.'):
-                continue
-            info = filename.split('/')
-            if len(info) != 2:
-                continue
-            journal, title = info[0], info[1]
-            if len(title) == 0:
-                continue
-            title = '.'.join(title.split('.')[0:-1])
-            with zip.open(original_filename) as content:
-                bytes_stream = content.read()
-                if chardet.detect(bytes_stream)['encoding'] == 'utf-8':
-                    content = bytes_stream.decode('utf-8')
-                else:
-                    content = bytes_stream.decode('gbk')
-                articles.append((journal, title, content))
-    add_articles_db(articles)
-    db_is_running = False
+    try:
+        zip_file = io.BytesIO(zip_file)
+        global db_is_running
+        db_is_running = True
+        articles = []
+        with zipfile.ZipFile(zip_file, 'r') as zip:
+            for filename in zip.namelist():
+                original_filename = filename
+                filename = filename.encode('cp437').decode('utf-8')
+                if filename.startswith('_') or filename.startswith('.'):
+                    continue
+                info = filename.split('/')
+                if len(info) != 2:
+                    continue
+                journal, title = info[0], info[1]
+                if len(title) == 0:
+                    continue
+                title = '.'.join(title.split('.')[0:-1])
+                with zip.open(original_filename) as content:
+                    bytes_stream = content.read()
+                    if chardet.detect(bytes_stream)['encoding'] == 'utf-8':
+                        content = bytes_stream.decode('utf-8')
+                    else:
+                        content = bytes_stream.decode('gbk')
+                    articles.append((journal, title, content))
+        add_articles_db(articles)
+        db_is_running = False
+    except:
+        pass
 
 def upload_journal(request):
     if db_is_running:
