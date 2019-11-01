@@ -6,9 +6,9 @@
                 <template slot="title"> 管理 </template>
                 <el-menu-item index="change" v-show="logined"> 更改管理密码 </el-menu-item>
                 <el-menu-item index="addNew" v-show="logined"> 添加数据词条 </el-menu-item>
+                <el-menu-item index="status" v-show="logined"> 查看运行状态 </el-menu-item>
                 <el-menu-item index="quit" v-show="logined"> 注销 </el-menu-item>
                 <el-menu-item index="login"  v-show="!logined"> 登录 </el-menu-item>
-                <el-menu-item index="status" v-show="logined"> 查看运行状态 </el-menu-item>
             </el-submenu>
             <el-menu-item index="about"> 关于 </el-menu-item>
         </el-menu>
