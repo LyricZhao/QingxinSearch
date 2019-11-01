@@ -1,6 +1,6 @@
 # frontend
 
-> Qingxin Search Engine
+> Frontend for Qingxin Times
 
 ## Build Setup
 

@@ -1,6 +1,6 @@
+import Vue from 'vue'
 import ElementUI from 'element-ui'
 import Main from '@/main.vue'
-import Vue from 'vue'
 import VueResource from 'vue-resource'
 import VueQuillEditor from 'vue-quill-editor'
 
