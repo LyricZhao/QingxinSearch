@@ -78,7 +78,7 @@ export default {
                         this.content = ''
                         this.title = ''
                     } else {
-                        this.$notify({title: '上传失败'})
+                        this.$notify({title: '上传失败', message: '后台可能有任务在执行'})
                     }
                 })
             }

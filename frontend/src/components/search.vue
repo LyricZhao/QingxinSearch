@@ -138,7 +138,7 @@ export default {
                         this.myHandlePageChange(this.currentPage)
                         this.$notify({title: '删除成功'})
                     } else {
-                        this.$notify({title: '删除失败'})
+                        this.$notify({title: '删除失败', message: '后台可能有任务在执行'})
                     }
                 })
                 done();
@@ -166,10 +166,10 @@ export default {
                         this.globalTableData[this.modifyIndex] = data
                         this.myHandlePageChange(this.currentPage)
                     } else {
-                        this.$notify({title: '修改失败'})
+                        this.$notify({title: '修改失败', message: '后台可能有任务在执行'})
                     }
                 }).catch(() => {
-                    this.$notify({title: '修改失败'})
+                    this.$notify({title: '修改失败', message: '后台可能有任务在执行'})
                 })
             }
         },

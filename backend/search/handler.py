@@ -143,6 +143,8 @@ def request_content_db(id):
     return article.content
 
 def modify_article(request):
+    if db_is_running:
+        return HttpResponse(json.dumps({'result': False}))
     requestJson = json.loads(request.body)
     try:
         modify_article_db(requestJson['id'], requestJson['journal'], requestJson['title'], requestJson['text'], requestJson['content'])
@@ -151,6 +153,8 @@ def modify_article(request):
     return HttpResponse(json.dumps({'result': True}))
 
 def delete_article(request):
+    if db_is_running:
+        return HttpResponse(json.dumps({'result': False}))
     requestJson = json.loads(request.body)
     try:
         delete_article_db(requestJson['id'])
@@ -159,6 +163,8 @@ def delete_article(request):
     return HttpResponse(json.dumps({'result': True}))
 
 def upload_article(request):
+    if db_is_running:
+        return HttpResponse(json.dumps({'result': False}))
     requestJson = json.loads(request.body)
     try:
         add_article_db(requestJson['journal'], requestJson['title'], requestJson['text'], requestJson['content'])
@@ -257,6 +263,8 @@ def login(request):
     return HttpResponse(json.dumps({'result': True})) 
 
 def delete_all(request):
+    if db_is_running:
+        return HttpResponse('failed, running tasks')
     Article.objects.all().delete()
     DictItem.objects.all().delete()
     return HttpResponse('success')
